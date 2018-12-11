@@ -1,0 +1,33 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.13.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:debug:20170905':
+    - web3 > web3-eth > web3-eth-contract > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-shh > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-eth-personal > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-eth > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-eth > web3-eth-accounts > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-net > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-eth > web3-eth-personal > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-eth-personal > web3-net > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-eth > web3-net > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-shh > web3-net > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+    - web3 > web3-eth > web3-eth-personal > web3-net > web3-core > web3-core-requestmanager > web3-providers-ws > WebSocket-Node > debug:
+        patched: '2018-12-11T02:10:09.527Z'
+  'npm:stringstream:20180511':
+    - web3 > web3-bzz > swarm-js > eth-lib > servify > request > stringstream:
+        patched: '2018-12-11T02:10:09.527Z'

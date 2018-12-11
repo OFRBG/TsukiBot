@@ -25,9 +25,15 @@
     "pg-promise": "^6.10.3",
     "python-shell": "^0.4.0",
     "r-script": "0.0.3",
-    "request": "^2.85.0",
+    "request": "^2.87.0",
     "snekfetch": "^3.6.4",
     "web3": "^1.0.0-beta.34",
-    "ws": "^5.1.1"
-  }
+    "ws": "^5.1.1",
+    "snyk": "^1.116.4"
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "snyk": true
 }
