@@ -17,6 +17,8 @@
     "cryptocompare": "^0.1.0",
     "didyoumean": "^1.2.1",
     "discord.js": "^11.3.2",
+    "dotenv-flow": "^3.1.0",
+    "env-var": "^5.1.0",
     "etherscan-api": "^100.0.0",
     "gdax": "^0.5.1",
     "kraken-api": "^1.0.0",
@@ -38,9 +40,12 @@
     "eslint": "^6.5.1",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.4.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-react": "^7.16.0",
-    "eslint-plugin-react-hooks": "^1.7.0"
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "prettier": "^1.18.2"
   }
 }

@@ -15,5 +15,5 @@ module.exports = {
   cmc,
   gdax,
   kraken,
-  poloniex,
+  poloniex
 };

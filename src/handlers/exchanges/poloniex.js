@@ -12,10 +12,15 @@ const getPricePoloniex = (coin1, coin2) => {
 
         const messageHeader = '__Poloniex__ Price for:\n';
 
-        const messageBody = (`\`• ${coin1}${' '.repeat(6 - coin1.length)}⇒ ${s} ${coin2} `
-          + `(${(body[pair].percentChange * 100).toFixed(2)}%)\` ∭ \`(V.${Math.trunc(body[pair].baseVolume)})\`\n`
-          + `\`-       ⇒\` \`${(body[`BTC_${coin1}`].last * body.USDT_BTC.last).toFixed(8)} USDT\``
-          + '\n');
+        const messageBody =
+          `\`• ${coin1}${' '.repeat(6 - coin1.length)}⇒ ${s} ${coin2} ` +
+          `(${(body[pair].percentChange * 100).toFixed(
+            2
+          )}%)\` ∭ \`(V.${Math.trunc(body[pair].baseVolume)})\`\n` +
+          `\`-       ⇒\` \`${(
+            body[`BTC_${coin1}`].last * body.USDT_BTC.last
+          ).toFixed(8)} USDT\`` +
+          '\n';
 
         return messageHeader + messageBody;
       } catch (err) {

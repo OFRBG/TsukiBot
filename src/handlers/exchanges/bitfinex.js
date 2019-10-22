@@ -13,7 +13,9 @@ const getPriceBitfinex = (coin1, coin2) => {
       return 'API Error';
     }
 
-    return `__Bitfinex__ Price for **${pair}** is : \`${parseFloat(res.last_price).toFixed(8)} ${coin2.toUpperCase()}\`.`;
+    return `__Bitfinex__ Price for **${pair}** is : \`${parseFloat(
+      res.last_price
+    ).toFixed(8)} ${coin2.toUpperCase()}\`.`;
   });
 };
 
