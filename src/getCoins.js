@@ -20,8 +20,8 @@ const update = () => new Promise(((resolve) => {
     coinsf = coinsf.join('","');
     coinsf = `["${coinsf}"]`;
 
-    fs.writeFile('./common/coins.json', coins, (err) => { if (err) return console.log(err); });
-    fs.writeFile('./common/coins_filtered.json', coinsf, (err) => { if (err) return console.log(err); });
+    fs.writeFile('./common/coins.json', coins, console.error);
+    fs.writeFile('./common/coins_filtered.json', coinsf, console.error);
 
     resolve([coinsa, coinsfa]);
   });

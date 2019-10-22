@@ -1,15 +1,12 @@
 const _ = require('lodash');
 const bittrex = require('node.bittrex.api');
+const { calculateUsdtPrice } = require('./utils');
 
 bittrex.options({
   stream: false,
   verbose: false,
   cleartext: true,
 });
-
-const calculateUsdtPrice = (coinPrice, btcPrice) => Math.floor(
-  (coinPrice.substring(1, 10).split(' ')[0]) * (btcPrice.substring(1, 8).split(' ')[0]) * 100000000,
-) / 100000000;
 
 const getPriceBittrex = (baseCoins) => {
   const bases = _(baseCoins).map(_.toUpperCase).sort().value();

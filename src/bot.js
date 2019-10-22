@@ -75,7 +75,6 @@ const keys = JSON.parse(fs.readFileSync('keys.api', 'utf8'));
 
 // Include API things
 const Discord = require('discord.js');
-const api = require('etherscan-api').init(keys.etherscan);
 
 // R script calls
 const R = require('r-script');
@@ -254,45 +253,6 @@ function getKLI(coins, chn) {
     chn.send(msg);
   }
 }
-
-
-//------------------------------------------
-//------------------------------------------
-
-
-// From the etherscan api, get the balance
-// for a given address. The balance is returned
-// in weis.
-
-function getEtherBalance(address, chn, action = 'b') {
-  if (action === 'b') {
-    const balance = api.account.balance(address);
-    balance.then((res) => {
-      chn.send(`The total ether registered for \`${address}\` is: \`${res.result / 1000000000000000000} ETH\`.`);
-    });
-  } else {
-    const block = api.proxy.eth_blockNumber();
-    const tx = api.proxy.eth_getTransactionByHash(address);
-
-    tx.then((res) => {
-      if (res.result !== null) {
-        if (res.result.blockNumber !== null) {
-          block.then((blockres) => {
-            chn.send(`Transaction included in block \`${web3.utils.hexToNumber(res.result.blockNumber)}\`.${
-              blockres.result ? ` Confirmations: \`${1 + web3.utils.hexToNumber(blockres.result) - web3.utils.hexToNumber(res.result.blockNumber)}\`` : ''}`);
-          }).catch(() => {
-            chn.send(`Transaction included in block \`${web3.utils.hexToNumber(res.result.blockNumber)}\`.`);
-          });
-        } else {
-          chn.send('Transaction still not mined.');
-        }
-      } else {
-        chn.send('Transaction not found. (Neither mined nor broadcasted.)');
-      }
-    });
-  }
-}
-
 
 //------------------------------------------
 //------------------------------------------
