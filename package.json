@@ -17,7 +17,7 @@
     "cryptocompare": "^0.1.0",
     "didyoumean": "^1.2.1",
     "discord.js": "^11.3.2",
-    "etherscan-api": "^3.0.11",
+    "etherscan-api": "^100.0.0",
     "gdax": "^0.5.1",
     "kraken-api": "^1.0.0",
     "lodash": "^4.17.15",
@@ -31,7 +31,7 @@
     "r-script": "0.0.3",
     "request": "^2.85.0",
     "snekfetch": "^3.6.4",
-    "web3": "^1.0.0-beta.34",
+    "web3": "^1.2.1",
     "ws": "^5.1.1"
   },
   "devDependencies": {
