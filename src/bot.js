@@ -9,7 +9,7 @@
 
 
 
- * Author:      Oscar "Hiro Inu" Fonseca
+ * Author:      Oscar "Cehhiro" Fonseca
  * Program:     TsukiBot
 
  * Discord bot that offers a wide range of services
@@ -39,6 +39,7 @@
 const fs = require('fs');
 const pg = require('pg');
 const pgp = require('pg-promise');
+const _ = require('lodash');
 
 // Scheduler
 const schedule = require('node-schedule');
@@ -50,53 +51,37 @@ const prefix = ['-t', '.tb'];
 const extensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'mov', 'mp4'];
 
 // Allowed coins in commands
-let pairs		= JSON.parse(fs.readFileSync('./common/coins.json', 'utf8'));
-let pairs_filtered = JSON.parse(fs.readFileSync('./common/coins_filtered.json', 'utf8'));
+const pairs = JSON.parse(fs.readFileSync('./common/coins.json', 'utf8'));
+const pairsFiltered = JSON.parse(fs.readFileSync('./common/coins_filtered.json', 'utf8'));
 
 // Coin request counter initialization
-const requestCounter = {};
-pairs.forEach((p) => requestCounter[p] = 0);
+const requestCounter = pairs.reduce((counter, coin) => _.set(counter, coin, 0), {});
 
 // Coin mention counter initialization
-const mentionCounter = {};
-const msgAcc = '';
 const MESSAGE_LIMIT = 100000;
-pairs_filtered.forEach((p) => mentionCounter[p] = 0);
+const mentionCounter = pairsFiltered.reduce((counter, coin) => _.set(counter, coin, 0), {});
 
 // Help string
-const title 		= '__**TsukiBot**__ :full_moon: \n';
-const github		= 'Check the GitHub repo for more detailed information. <https://github.com/OFRBG/TsukiBot#command-table>';
+const title = '__**TsukiBot**__ :full_moon: \n';
+const github = 'Check the GitHub repo for more detailed information. <https://github.com/OFRBG/TsukiBot#command-table>';
 const helpStr = fs.readFileSync('./common/help.txt', 'utf8');
 const helpjson = JSON.parse(fs.readFileSync('./common/help.json', 'utf8'));
 
 // DiscordBots API
 const snekfetch = require('snekfetch');
 
-// HTTP request
-const request = require('request');
-
 // Get the api keys
 const keys = JSON.parse(fs.readFileSync('keys.api', 'utf8'));
 
-
 // Include API things
-const Discord 		= require('discord.js');
-const { Client } = require('coinbase');
-const KrakenClient 	= require('kraken-api');
-const bittrex 		= require('node.bittrex.api');
-const BFX = require('bitfinex-api-node');
-const api 		= require('etherscan-api').init(keys.etherscan);
-const cc 		= require('cryptocompare');
-const binance = require('node-binance-api');
-const clientcmc = require('coinmarketcap');
-
+const Discord = require('discord.js');
+const api = require('etherscan-api').init(keys.etherscan);
 
 // R script calls
 const R = require('r-script');
 
 let kliArray = {};
 const kliArrayDict = {};
-
 
 // CMC Cache
 let cmcArray = {};
@@ -105,45 +90,6 @@ let cmcArrayDict = {};
 // Spellcheck
 const didyoumean = require('didyoumean');
 
-
-// ----------------------------------------------------------------------------------------------------------------
-
-// Web3
-const web3 = require('web3');
-
-const Web3 = new web3(new web3.providers.HttpProvider(`https://kovan.infura.io/${keys.infura}` /* 'http://localhost:8545' */));
-
-const abi = [{
-  constant: true, inputs: [], name: 'getRating', outputs: [{ name: '', type: 'int256' }], payable: false, stateMutability: 'view', type: 'function',
-}, {
-  constant: true, inputs: [], name: 'negative', outputs: [{ name: '', type: 'int256' }], payable: false, stateMutability: 'view', type: 'function',
-}, {
-  constant: false, inputs: [{ name: '_vote', type: 'bool' }], name: 'feedback', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function',
-}, {
-  constant: true, inputs: [], name: 'productName', outputs: [{ name: '', type: 'string' }], payable: false, stateMutability: 'view', type: 'function',
-}, {
-  constant: true, inputs: [], name: 'owner', outputs: [{ name: '', type: 'address' }], payable: false, stateMutability: 'view', type: 'function',
-}, {
-  constant: false, inputs: [{ name: '_newPrice', type: 'uint256' }], name: 'setPrice', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function',
-}, {
-  constant: true, inputs: [{ name: '_id', type: 'string' }], name: 'checkPayment', outputs: [{ name: '', type: 'bool' }], payable: false, stateMutability: 'view', type: 'function',
-}, {
-  constant: true, inputs: [], name: 'price', outputs: [{ name: '', type: 'uint256' }], payable: false, stateMutability: 'view', type: 'function',
-}, {
-  constant: false, inputs: [{ name: '_id', type: 'string' }], name: 'payment', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function',
-}, {
-  constant: true, inputs: [], name: 'positive', outputs: [{ name: '', type: 'int256' }], payable: false, stateMutability: 'view', type: 'function',
-}, {
-  constant: false, inputs: [{ name: 'newOwner', type: 'address' }], name: 'transferOwnership', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function',
-}, {
-  inputs: [{ name: '_price', type: 'uint256' }, { name: '_productName', type: 'string' }, { name: '_owner', type: 'address' }], payable: false, stateMutability: 'nonpayable', type: 'constructor',
-}];
-
-const ProductRegister = new Web3.eth.Contract(abi, '0x27659AB24B40461Bdc9DC3817683CC0508f74c42');
-
-// ----------------------------------------------------------------------------------------------------------------
-
-
 // CryptoCompare requires global fetch
 global.fetch = require('node-fetch');
 
@@ -151,7 +97,6 @@ global.fetch = require('node-fetch');
 const PythonShell = require('python-shell');
 
 // Declare channels and message counter
-const channelName = 'general';
 let messageCount = 0;
 let referenceTime = Date.now();
 
@@ -190,14 +135,6 @@ function removeID(id) {
 // Shortcut config
 const shortcutConfig = JSON.parse(fs.readFileSync('./common/shortcuts.json', 'utf8'));
 
-// Bittrex handle
-const bittrexhandle = {};
-
-// Initialize api things
-const clientGDAX = new Client({ apiKey: keys.coinbase[0], apiSecret: keys.coinbase[1] });
-const clientKraken = new KrakenClient();
-const bfxRest = new BFX().rest;
-
 // Reload Coins
 const reloader = require('./getCoins');
 
@@ -224,351 +161,6 @@ const quote = '"If I was given 1 wei for every misattributed quote, I\'d be addr
     in one of these.
 
   -------------------------------------------- */
-
-
-//------------------------------------------
-//------------------------------------------
-
-// Function that gets GDAX spot prices
-function getPriceGDAX(coin1, coin2, base, chn) {
-  // Get the spot price and send it to general
-  clientGDAX.getSpotPrice({ currencyPair: `${coin1.toUpperCase()}-${coin2.toUpperCase()}` }, (err, price) => {
-    if (err) { chn.send('API Error.'); } else {
-      let per = '';
-      if (base != -1) {
-        per = `\n Change: \`${Math.round(((price.data.amount / base - 1) * 100) * 100) / 100}%\``;
-      }
-
-      chn.send(`__GDAX__ Price for **${coin1.toUpperCase()
-      }-${coin2.toUpperCase()}** is : \`${price.data.amount} ${coin2.toUpperCase()}\`.${per}`);
-    }
-  });
-}
-
-
-//------------------------------------------
-//------------------------------------------
-
-// Function that gets CMC prices
-
-function getPriceCMC(coins, chn, action = '-', ext = 'd') {
-  if (!cmcArrayDict.BTC) return;
-
-  const msgh = '__CoinMarketCap__ Price for:\n';
-  let msg = '';
-
-  const bpchg = parseFloat(cmcArrayDict.BTC.percent_change_24h);
-  for (let i = 0; i < coins.length; i++) {
-    if (!cmcArrayDict[coins[i].toUpperCase()]) {
-      const g = didyoumean(coins[i].toUpperCase(), Object.keys(cmcArrayDict));
-      if (!g) continue;
-      else coins[i] = g;
-    }
-
-    const bp = `${parseFloat(cmcArrayDict[coins[i].toUpperCase()].price_btc).toFixed(8)} BTC\` (\`${
-      Math.round(parseFloat(cmcArrayDict[coins[i].toUpperCase()].percent_change_24h - bpchg) * 100) / 100}%\`)`;
-    const up = `${parseFloat(cmcArrayDict[coins[i].toUpperCase()].price_usd)} USD\` (\`${
-      Math.round(parseFloat(cmcArrayDict[coins[i].toUpperCase()].percent_change_24h) * 100) / 100}%\`)`;
-
-    coins[i] = (coins[i].length > 6) ? coins[i].substring(0, 6) : coins[i];
-    switch (action) {
-      case '-':
-        msg += (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒\` \`${ext === 's' ? bp : up}\n`);
-        break;
-
-      case '+':
-        msg += (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒\` \`${
-          up} \`⇒\` \`${
-          bp}\n`);
-        break;
-
-      case '*':
-        msg += (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒ 💵\` \`${
-          up}\n\`|        ⇒\` \`${
-          bp}\n`);
-        break;
-
-      default:
-        msg += (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒\` \`${ext === 's' ? bp : up}\n`);
-        break;
-    }
-  }
-
-  msg += (Math.random() > 0.8) ? `\n\`${quote} ${donationAdd}\`` : '';
-  if (msg !== '') chn.send(msgh + msg);
-}
-
-//------------------------------------------
-//------------------------------------------
-
-// Function that gets CryptoCompare prices
-
-function getPriceCC(coins, chn, action = '-', ext = 'd') {
-  const query = coins.concat(['BTC']);
-
-  // Get the spot price of the pair and send it to general
-  cc.priceFull(query.map((c) => c.toUpperCase()), ['USD', 'BTC'])
-    .then((prices) => {
-      let msg = '__CryptoCompare/CMC__ Price for:\n';
-      const ordered = {};
-
-      const bpchg = parseFloat(cmcArrayDict.BTC.percent_change_24h);
-
-      for (let i = 0; i < coins.length; i++) {
-        let bp; let
-          up;
-
-        try {
-          bp = `${prices[coins[i].toUpperCase()].BTC.PRICE.toFixed(8)} BTC\` (\`${
-            Math.round(prices[coins[i].toUpperCase()].BTC.CHANGEPCT24HOUR * 100) / 100}%\`)`;
-          up = `${prices[coins[i].toUpperCase()].USD.PRICE} USD\` (\`${
-            Math.round((prices[coins[i].toUpperCase()].BTC.CHANGEPCT24HOUR + prices.BTC.USD.CHANGEPCT24HOUR) * 100) / 100}%\`)`;
-        } catch (e) {
-          if (cmcArrayDict[coins[i].toUpperCase()]) {
-            bp = `${parseFloat(cmcArrayDict[coins[i].toUpperCase()].price_btc).toFixed(8)} BTC\` (\`${
-              Math.round(parseFloat(cmcArrayDict[coins[i].toUpperCase()].percent_change_24h - bpchg) * 100) / 100}%\`)`;
-            up = `${parseFloat(cmcArrayDict[coins[i].toUpperCase()].price_usd)} USD\` (\`${
-              Math.round(parseFloat(cmcArrayDict[coins[i].toUpperCase()].percent_change_24h) * 100) / 100}%\`)`;
-          } else {
-            bp = 'unvavilable`';
-            up = 'unavailable`';
-          }
-        }
-
-        coins[i] = (coins[i].length > 6) ? coins[i].substring(0, 6) : coins[i];
-        switch (action) {
-          case '-':
-            msg += (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒\` \`${ext === 's' ? bp : up}\n`);
-            break;
-
-          case '%':
-            try {
-              ordered[prices[coins[i].toUpperCase()].BTC.CHANGEPCT24HOUR + prices.BTC.USD.CHANGEPCT24HOUR] = (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒\` \`${ext === 's' ? bp : up}\n`);
-            } catch (e) {
-              if (cmcArrayDict[coins[i].toUpperCase()]) ordered[cmcArrayDict[coins[i].toUpperCase()].percent_change_24h] = (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒\` \`${ext === 's' ? bp : up}\n`);
-            }
-
-            break;
-
-          case '+':
-            msg += (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒\` \`${
-              up} \`⇒\` \`${
-              bp}\n`);
-            break;
-
-          case '*':
-            msg += (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒ 💵\` \`${
-              up}\n\`|        ⇒\` \`${
-              bp}\n`);
-            break;
-
-          default:
-            msg += (`\`• ${coins[i].toUpperCase()}${' '.repeat(6 - coins[i].length)} ⇒\` \`${ext === 's' ? bp : up}\n`);
-            break;
-        }
-      }
-
-      if (action === '%') {
-        const k = Object.keys(ordered).sort((a, b) => parseFloat(b) - parseFloat(a));
-        for (const k0 in k) msg += ordered[k[k0]];
-      }
-
-      chn.send(msg);
-    })
-    .catch(console.log);
-}
-
-
-//------------------------------------------
-//------------------------------------------
-
-
-// Function that gets Finex prices
-
-function getPriceFinex(coin1, coin2, chn) {
-  coin2 = coin2 || (coin1.toUpperCase() === 'BTC' ? 'USD' : 'BTC');
-
-  bfxRest.ticker(coin1.toUpperCase() + coin2.toUpperCase(), (err, res) => {
-    if (err) {
-      chn.send(`API Error: ${err.message}`);
-    } else {
-      const s = parseFloat(res.last_price).toFixed(8);
-
-      chn.send(`__Bitfinex__ Price for **${coin1.toUpperCase()
-      }-${coin2.toUpperCase()}** is : \`${s} ${coin2.toUpperCase()}\`.`);
-    }
-  });
-}
-
-
-//------------------------------------------
-//------------------------------------------
-
-
-// Function that gets Kraken prices
-
-function getPriceKraken(coin1, coin2, base, chn) {
-  // Get the spot price of the pair and send it to general
-  clientKraken.api('Ticker', { pair: `${coin1.toUpperCase()}${coin2.toUpperCase()}` }, (error, data) => {
-    if (error) { chn.send('520ken API no response.'); } else {
-      let per = '';
-      let s = (data.result[Object.keys(data.result)].c[0]);
-      s = (coin2.toUpperCase() === 'XBT') ? s.toFixed(8) : s;
-
-      if (base != -1) {
-        per = `\n Change: \`${Math.round(((s / base - 1) * 100) * 100) / 100}%\``;
-      }
-
-      chn.send(`__Kraken__ Price for **${coin1.toUpperCase()
-      }-${coin2.toUpperCase()}** is : \`${s} ${coin2.toUpperCase()}\`.${per}`);
-    }
-  });
-}
-
-
-//------------------------------------------
-//------------------------------------------
-
-
-// Function that gets Poloniex prices
-
-function getPricePolo(coin1, coin2, chn) {
-  const url = 'https://poloniex.com/public?command=returnTicker';
-  coin2 = coin2.toUpperCase();
-
-  if (coin2 === 'BTC' || coin2 === 'ETH' || coin2 === 'USDT') {
-    request({
-      url,
-      json: true,
-    }, (error, response, body) => {
-      const pair = `${coin2.toUpperCase()}_${coin1.toUpperCase()}`;
-
-      try {
-        const s = body[pair].last;
-
-        let ans = ('__Poloniex__ Price for:\n');
-
-        ans += (`\`• ${coin1.toUpperCase()}${' '.repeat(6 - coin1.length)}⇒ ${s} ${coin2.toUpperCase()} `
-          + `(${(body[pair].percentChange * 100).toFixed(2)}%)\` ∭ \`(V.${Math.trunc(body[pair].baseVolume)})\`\n`
-          + `\`-       ⇒\` \`${(body[`BTC_${coin1.toUpperCase()}`].last * body.USDT_BTC.last).toFixed(8)} USDT\``
-          + '\n');
-
-        ans += (Math.random() > 0.6) ? "\n`Tired of Bittrex's policies? Join Binance with my link:` <https://launchpad.binance.com/register.html?ref=10180938>" : '';
-        chn.send(ans);
-      } catch (err) {
-        console.log(err);
-        chn.send('Poloniex API Error.');
-      }
-    });
-  }
-}
-
-
-//------------------------------------------
-//------------------------------------------
-
-
-function getPriceBinance(coin1, coin2, chn) {
-  coin1 = coin1.map((c) => c.toUpperCase()).sort();
-  coin1.push('BTC');
-
-  binance.prevDay(false, (data) => {
-    if (data) {
-      const markets = data;
-      let s = '__Binance__ Price for: \n';
-      const sn = [];
-      const vp = {};
-
-      for (const idx in markets) {
-        const c = markets[idx];
-        let pd = parseFloat(c.lastPrice);
-
-        const curr = (c.symbol.slice(-4) === 'USDT') ? c.symbol.slice(0, -4) : c.symbol.slice(0, -3);
-        if (coin1.indexOf(curr) === -1) continue;
-
-        const base = (c.symbol.slice(-4) === 'USDT') ? c.symbol.slice(-4) : c.symbol.slice(-3);
-
-        pd = (base === 'BTC') ? (pd.toFixed(8)) : pd;
-
-        if (!sn[curr]) {
-          sn[curr] = [];
-        }
-
-        const pch = parseFloat(c.priceChangePercent).toFixed(2);
-        if (base === 'BTC') sn[curr].unshift(`\`${pd} ${base} (${pch}%)\` ∭ \`(V.${Math.trunc(parseFloat(c.quoteVolume))})\``);
-        else sn[curr].push(`\`${pd} ${base} (${pch}%)\` ∭ \`(V.${Math.trunc(parseFloat(c.quoteVolume))})\``);
-      }
-
-      for (const coin in sn) {
-        s += (`\`• ${coin}${' '.repeat(6 - coin.length)}⇒\` ${sn[coin].join('\n`-       ⇒` ')
-        }${coin !== 'BTC' && coin !== 'ETH' && coin !== 'BNB' && sn[coin][4] == null ? `\n\`-       ⇒\` \`${
-          Math.floor((sn[coin][0].substring(1, 10).split(' ')[0]) * (sn.BTC[0].substring(1, 8).split(' ')[0]) * 100000000) / 100000000} USDT\`` : ''
-        }\n`);
-      }
-
-      s += (Math.random() > 0.8) ? `\n\`${quote} ${donationAdd}\`` : '';
-      chn.send(s);
-    } else {
-      chn.send('Binance API error.');
-    }
-  });
-}
-
-
-//------------------------------------------
-//------------------------------------------
-
-// Bittrex API v2
-
-bittrex.options({
-  stream: false,
-  verbose: false,
-  cleartext: true,
-});
-
-function getPriceBittrex(coin1, coin2, chn) {
-  coin1 = coin1.map((c) => c.toUpperCase()).sort();
-  coin1.push('BTC');
-
-  bittrex.sendCustomRequest('https://bittrex.com/Api/v2.0/pub/Markets/GetMarketSummaries', (data) => {
-    data = JSON.parse(data);
-
-    if (data && data.result) {
-      const p = data.result;
-      let s = '__Bittrex__ Price for: \n';
-      const sn = [];
-      const vp = {};
-
-      const markets = p.filter((item) => coin1.indexOf(item.Market.MarketCurrency) > -1);
-
-      for (const idx in markets) {
-        const c = markets[idx];
-        let pd = c.Summary.Last;
-        pd = (c.Market.BaseCurrency === 'BTC') ? (pd.toFixed(8)) : pd;
-
-        if (!sn[c.Market.MarketCurrency]) {
-          sn[c.Market.MarketCurrency] = [];
-        }
-
-        const pch = (((pd / c.Summary.PrevDay) - 1) * 100).toFixed(2);
-        sn[c.Market.MarketCurrency].push(`\`${pd} ${c.Market.BaseCurrency} (${pch}%)\` ∭ \`(V.${Math.trunc(c.Summary.BaseVolume)})\``);
-      }
-
-
-      for (const coin in sn) {
-        s += (`\`• ${coin}${' '.repeat(6 - coin.length)}⇒\` ${sn[coin].join('\n`-       ⇒` ')
-        }${coin !== 'BTC' && coin !== 'ETH' && sn[coin][2] == null ? `\n\`-       ⇒\` \`${
-          Math.floor((sn[coin][0].substring(1, 10).split(' ')[0]) * (sn.BTC[0].substring(1, 8).split(' ')[0]) * 100000000) / 100000000} USDT\`` : ''
-        }\n`);
-      }
-
-      s += (Math.random() > 0.8) ? `\n\`${quote} ${donationAdd}\`` : '';
-      chn.send(s);
-    } else {
-      chn.send('Bittrex API error.');
-    }
-  });
-}
 
 
 //------------------------------------------
