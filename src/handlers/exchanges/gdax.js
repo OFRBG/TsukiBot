@@ -1,30 +1,58 @@
+// @flow
+const _ = require('lodash');
 const { Client } = require('coinbase');
-const { currencyPair } = require('./utils');
+const env = require('env-var');
+const { promisify } = require('util');
+const { currencyPair, percentChangeMessage } = require('./utils');
 
-const clientGDAX = new Client({
-  apiKey: keys.coinbase[0],
-  apiSecret: keys.coinbase[1]
+const keys = env
+  .get('COINBASE_KEYS')
+  .required()
+  .asArray();
+
+const client = new Client({
+  apiKey: keys[0],
+  apiSecret: keys[1]
 });
 
-const getPriceGDAX = (coin1, coin2, base) => {
+const api = promisify(client.getSpotPrice.bind(client));
+
+/*::
+type Handler = (coins: string[]) => Promise<string>
+*/
+
+const handler /*: Handler */ = async coins => {
+  const [coin1 = 'ETH', coin2 = 'USD', base] = coins;
+
   const pair = currencyPair(coin1, coin2);
 
-  clientGDAX.getSpotPrice({ pair }, (err, price) => {
-    if (err) {
-      return 'API Error.';
-    }
+  const response = await api({ currencyPair: pair });
 
-    const per =
-      base !== -1
-        ? `\n Change: \`${Math.round(
-            (price.data.amount / base - 1) * 100 * 100
-          ) / 100}%\``
-        : '';
+  const price = response.data.amount;
 
-    return `__GDAX__ Price for **${currencyPair}** is : \`${
-      price.data.amount
-    } ${coin2.toUpperCase()}\`.${per}`;
-  });
+  const percentChange = !_.isNaN(parseFloat(base))
+    ? percentChangeMessage(Math.round((price / parseFloat(base) - 1) * 100))
+    : '';
+
+  return `__GDAX__ Price for **${pair}** is : \`${price} ${coin2.toUpperCase()}\`.${percentChange}`;
 };
 
-module.exports = { getPriceGDAX };
+/*::
+type Matcher = (command: string) => boolean
+*/
+
+const matcher /*: Matcher */ = command => ['g', 'gdax'].includes(command);
+
+/*::
+type CommandHandler = {
+  handler: Handler,
+  matcher: Matcher,
+}
+*/
+
+const commandHandler /*: CommandHandler */ = {
+  handler,
+  matcher
+};
+
+module.exports = commandHandler;

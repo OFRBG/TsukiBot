@@ -1,0 +1,11 @@
+[include]
+src/handlers
+
+[untyped]
+.*/node_modules/.*
+
+[options]
+emoji=true
+
+[version]
+0.112.0

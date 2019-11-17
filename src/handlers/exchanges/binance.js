@@ -1,8 +1,35 @@
+// @flow
 const _ = require('lodash');
 const binance = require('node-binance-api');
 const { calculateUsdtPrice } = require('./utils');
 
-const getPriceBinance = coins => {
+const padSpaces = spaces => ' '.repeat(spaces);
+const joiner = '\n`- ⇒` ';
+
+/*::
+type CommandHandler = {
+  handler: Handler,
+  matchers: string[],
+}
+*/
+
+/*::
+type Handler = (coins: string[]) => string
+*/
+
+const calculateMessage = (coinData, coin, allCoinsData) => {
+  const price =
+    coin !== 'BTC' && coin !== 'ETH' && _.isNil(coinData[4])
+      ? calculateUsdtPrice(coinData[0], allCoinsData.BTC[0])
+      : '';
+
+  // eslint-disable-next-line prefer-template
+  return `\`• ${coin}${padSpaces(6 - coin.length)}⇒ \`${coinData.join(
+    joiner
+  )}${price}`;
+};
+
+const getPriceBinance /*: Handler */ = coins => {
   const allCoins = coins
     .map(_.toUpper)
     .sort()
@@ -13,7 +40,7 @@ const getPriceBinance = coins => {
       const markets = res;
       const messageHeader = '__Binance__ Price for: \n';
 
-      const sn = markets.reduce((data, market) => {
+      const sn = markets.forEach((data, market) => {
         const rawPrice = parseFloat(market.lastPrice);
 
         const curr =
@@ -46,19 +73,16 @@ const getPriceBinance = coins => {
         }
       });
 
-      return (
-        messageHeader +
-        _.chain(sn).map((coinData, coin, allCoinsData) =>
-          `\`• ${coin}${' '.repeat(6 - coin.length)}⇒\` ${coinData.join(
-            '\n`- ⇒` '
-          )}${coin !== 'BTC' && coin !== 'ETH' && coinData[4] == null}`
-            ? calculateUsdtPrice(coinData[0], allCoinsData.BTC[0])
-            : ''
-        )
-      );
+      return messageHeader + sn.map(calculateMessage);
     }
+
     return 'Binance API error';
   });
 };
 
-module.exports = { getPriceBinance };
+const commandHandler /*: CommandHandler */ = {
+  handler: getPriceBinance,
+  matchers: ['bin', 'm', 'n']
+};
+
+module.exports = commandHandler;

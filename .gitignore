@@ -1,6 +1,8 @@
 .gitignore
 node_modules
 
+.env
+.env.*
 *.json
 *.pdf
 .Rhistory
@@ -9,3 +11,4 @@ keys.api
 test.*
 *.pyc
 *.swp
+*.log

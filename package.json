@@ -2,12 +2,15 @@
   "name": "tsukibot",
   "version": "0.1.1",
   "description": "Discord bot with cryptocurrency functionalities",
-  "main": "bot.js",
+  "main": "src/bot.js",
   "author": "Oscar Fonseca",
   "repository": "https://github.com/OFRBG/TsukiBot",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint src"
+    "start": "node ./src/bot.js",
+    "dev": "nodemon -- -d",
+    "lint": "eslint src",
+    "flow": "flow"
   },
   "dependencies": {
     "bitfinex-api-node": "^1.2.1",
@@ -34,7 +37,9 @@
     "request": "^2.85.0",
     "snekfetch": "^3.6.4",
     "web3": "^1.2.1",
-    "ws": "^5.1.1"
+    "winston": "^3.2.1",
+    "ws": "^5.1.1",
+    "yargs": "^15.0.1"
   },
   "devDependencies": {
     "eslint": "^6.5.1",
@@ -46,6 +51,8 @@
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-react": "^7.16.0",
     "eslint-plugin-react-hooks": "^1.7.0",
+    "flow-bin": "^0.112.0",
+    "flow-remove-types": "^2.112.0",
     "prettier": "^1.18.2"
   }
 }

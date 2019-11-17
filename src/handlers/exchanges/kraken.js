@@ -1,32 +1,57 @@
+// @flow
+const _ = require('lodash');
 const KrakenClient = require('kraken-api');
-const { currencyPair } = require('./utils');
+const { promisify } = require('util');
+const { currencyPair, percentChangeMessage } = require('./utils');
 
-const clientKraken = new KrakenClient();
+const client = new KrakenClient();
 
-const getPriceKraken = (coin1, coin2, base) => {
+const api = promisify(client.api.bind(client));
+
+/*::
+type Handler = (coins: string[]) => Promise<string>
+*/
+
+const handler /*: Handler */ = async coins => {
+  const [coin1 = 'ETH', coin2 = 'USD', base] = coins;
+
   const pair = currencyPair(coin1, coin2);
 
-  clientKraken.api(
-    'Ticker',
-    { pair: `${coin1.toUpperCase()}${coin2.toUpperCase()}` },
-    (error, data) => {
-      if (error) {
-        return '520ken API no response.';
-      }
+  const data = await api('Ticker', {
+    pair: `${coin1.toUpperCase()}${coin2.toUpperCase()}`
+  });
 
-      const rawPrice = data.result[Object.keys(data.result)].c[0];
-      const price =
-        coin2.toUpperCase() === 'XBT' ? rawPrice.toFixed(8) : rawPrice;
+  const pairKey = _.keys(data.result)[0];
+  const rawPrice = _.chain(data)
+    .get(`result[${pairKey}].c[0]`)
+    .toNumber()
+    .value();
 
-      const per =
-        base !== -1
-          ? `\n Change: \`${Math.round((price / base - 1) * 100 * 100) /
-              100}%\``
-          : '';
+  const price = coin2.toUpperCase() === 'XBT' ? rawPrice.toFixed(8) : rawPrice;
 
-      return `__Kraken__ Price for **${pair}** is : \`${price} ${coin2.toUpperCase()}\`.${per}`;
-    }
-  );
+  const percentChange = !_.isNaN(parseFloat(base))
+    ? percentChangeMessage(Math.round((price / parseFloat(base) - 1) * 100))
+    : '';
+
+  return `__Kraken__ Price for **${pair}** is : \`${price} ${coin2.toUpperCase()}\`.${percentChange}`;
 };
 
-module.exports = { getPriceKraken };
+/*::
+type Matcher = (command: string) => boolean
+*/
+
+const matcher /*: Matcher */ = command => ['k', 'kraken'].includes(command);
+
+/*::
+type CommandHandler = {
+  handler: Handler,
+  matcher: Matcher,
+}
+*/
+
+const commandHandler /*: CommandHandler */ = {
+  handler,
+  matcher
+};
+
+module.exports = commandHandler;
