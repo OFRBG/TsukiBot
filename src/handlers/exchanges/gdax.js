@@ -17,10 +17,6 @@ const client = new Client({
 
 const api = promisify(client.getSpotPrice.bind(client));
 
-/*::
-type Handler = (coins: string[]) => Promise<string>
-*/
-
 const handler /*: Handler */ = async coins => {
   const [coin1 = 'ETH', coin2 = 'USD', base] = coins;
 
@@ -35,18 +31,7 @@ const handler /*: Handler */ = async coins => {
   return `__GDAX__ Price for **${pair}** is : \`${price} ${coin2.toUpperCase()}\`.${percentChange}`;
 };
 
-/*::
-type Matcher = (command: string) => boolean
-*/
-
 const matcher /*: Matcher */ = command => ['g', 'gdax'].includes(command);
-
-/*::
-type CommandHandler = {
-  handler: Handler,
-  matcher: Matcher,
-}
-*/
 
 const commandHandler /*: CommandHandler */ = {
   handler,

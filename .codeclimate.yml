@@ -11,6 +11,7 @@ exclude_patterns:
 - "**/node_modules/"
 - "common/"
 - "config/"
+- "test/"
 - "db/"
 - "docs/"
 - "python/"

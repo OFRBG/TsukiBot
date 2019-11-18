@@ -12,3 +12,4 @@ test.*
 *.pyc
 *.swp
 *.log
+.DS_Store

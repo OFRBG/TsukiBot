@@ -1,21 +1,30 @@
 // @flow
 const _ = require('lodash');
-const binance = require('node-binance-api');
+// const binance = require('node-binance-api');
+const request = require('request-promise-native');
 const { calculateUsdtPrice } = require('./utils');
 
+const userAgent = 'Mozilla/4.0 (compatible; Node Binance API)';
+const contentType = 'application/x-www-form-urlencoded';
 const padSpaces = spaces => ' '.repeat(spaces);
 const joiner = '\n`- ⇒` ';
+const pairMatcher = /(.*)(USDT|BUSD|BTC|ETH|NGN|USDC|PAX|USDS|TUSD|BNB)/;
 
-/*::
-type CommandHandler = {
-  handler: Handler,
-  matchers: string[],
-}
-*/
+const url = 'https://api.binance.com/api/v1/ticker/24hr';
 
-/*::
-type Handler = (coins: string[]) => string
-*/
+const pricesRequest = () => {
+  const opt = {
+    url,
+    method: 'GET',
+    agent: false,
+    headers: {
+      'User-Agent': userAgent,
+      'Content-type': contentType
+    }
+  };
+
+  return request(opt);
+};
 
 const calculateMessage = (coinData, coin, allCoinsData) => {
   const price =
@@ -29,60 +38,45 @@ const calculateMessage = (coinData, coin, allCoinsData) => {
   )}${price}`;
 };
 
-const getPriceBinance /*: Handler */ = coins => {
-  const allCoins = coins
+const handler /*: Handler */ = async coins => {
+  const allCoins /* string[] */ = _.chain(coins)
     .map(_.toUpper)
     .sort()
-    .push('BTC');
+    .value();
 
-  binance.prevDay(false, res => {
-    if (res) {
-      const markets = res;
-      const messageHeader = '__Binance__ Price for: \n';
+  const markets = JSON.parse(await pricesRequest());
 
-      const sn = markets.forEach((data, market) => {
-        const rawPrice = parseFloat(market.lastPrice);
+  const messageHeader = '__Binance__ Price for: \n';
 
-        const curr =
-          market.symbol.slice(-4) === 'USDT'
-            ? market.symbol.slice(0, -4)
-            : market.symbol.slice(0, -3);
+  const requests = markets.map(market => {
+    const rawPrice = parseFloat(market.lastPrice);
 
-        if (!allCoins.includes(curr)) return;
+    const result = pairMatcher.exec(market.symbol);
 
-        const base =
-          market.symbol.slice(-4) === 'USDT'
-            ? market.symbol.slice(0, -4)
-            : market.symbol.slice(0, -3);
+    if (result == null) return '';
 
-        const price = base === 'BTC' ? rawPrice.toFixed(8) : rawPrice;
+    const [, curr, base] = result;
 
-        if (!sn[curr]) {
-          sn[curr] = [];
-        }
+    if (!allCoins.includes(curr)) return '';
+    console.log(market.symbol);
 
-        const percentChange = parseFloat(market.priceChangePercent).toFixed(2);
-        const message = `\`${price} ${base} (${percentChange}%)\` ∭ \`(V.${Math.trunc(
-          parseFloat(market.quoteVolume)
-        )})\``;
+    const price = base === 'BTC' ? rawPrice.toFixed(8) : rawPrice;
 
-        if (base === 'BTC') {
-          data[curr].unshift(message);
-        } else {
-          data[curr].push(message);
-        }
-      });
+    const percentChange = parseFloat(market.priceChangePercent).toFixed(2);
 
-      return messageHeader + sn.map(calculateMessage);
-    }
-
-    return 'Binance API error';
+    return `\`${price} ${base} (${percentChange}%)\` ∭ \`(V.${Math.trunc(
+      parseFloat(market.quoteVolume)
+    )})\``;
   });
+
+  return messageHeader + _.compact(requests).join(joiner);
 };
 
+const matcher /*: Matcher */ = command => ['bin', 'm', 'n'].includes(command);
+
 const commandHandler /*: CommandHandler */ = {
-  handler: getPriceBinance,
-  matchers: ['bin', 'm', 'n']
+  handler,
+  matcher
 };
 
 module.exports = commandHandler;

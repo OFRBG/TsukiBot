@@ -1,5 +1,6 @@
 [include]
 src/handlers
+src/bot.js
 
 [untyped]
 .*/node_modules/.*
