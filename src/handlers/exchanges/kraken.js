@@ -29,9 +29,7 @@ const handler /*: Handler */ = async coins => {
 
   const price = coin2.toUpperCase() === 'XBT' ? rawPrice.toFixed(8) : rawPrice;
 
-  const percentChange = !_.isNaN(parseFloat(base))
-    ? percentChangeMessage(Math.round((price / parseFloat(base) - 1) * 100))
-    : '';
+  const percentChange = percentChangeMessage(price, base);
 
   return `__Kraken__ Price for **${pair}** is : \`${price} ${coin2.toUpperCase()}\`.${percentChange}`;
 };

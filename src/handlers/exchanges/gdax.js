@@ -30,9 +30,7 @@ const handler /*: Handler */ = async coins => {
 
   const price = response.data.amount;
 
-  const percentChange = !_.isNaN(parseFloat(base))
-    ? percentChangeMessage(Math.round((price / parseFloat(base) - 1) * 100))
-    : '';
+  const percentChange = percentChangeMessage(price, base);
 
   return `__GDAX__ Price for **${pair}** is : \`${price} ${coin2.toUpperCase()}\`.${percentChange}`;
 };
