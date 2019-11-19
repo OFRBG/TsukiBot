@@ -6,7 +6,6 @@ const { calculateUsdtPrice } = require('./utils');
 
 const userAgent = 'Mozilla/4.0 (compatible; Node Binance API)';
 const contentType = 'application/x-www-form-urlencoded';
-const padSpaces = spaces => ' '.repeat(spaces);
 const joiner = '\n`  ⇒` ';
 const pairMatcher = /(.*)(USDT|BUSD|BTC|ETH|NGN|USDC|PAX|USDS|TUSD|BNB)/;
 

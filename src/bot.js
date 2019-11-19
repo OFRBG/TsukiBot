@@ -70,11 +70,27 @@ const commands = message => {
 /**
  * Handle server ready state
  */
-const readyHandler = () => {
+const readyHandler = async () => {
   logger.info('Server ready');
 
-  if (argv.d)
-    logger.info(`Dev mode. Listening to ${env.get('DEV_ID').asString()}`);
+  if (argv.d) {
+    const devId = env
+      .get('DEV_ID')
+      .required()
+      .asString();
+
+    logger.info(`Dev mode. Listening to ${devId}`);
+
+    try {
+      const dev = await client.fetchUser(devId);
+      await dev.send('TsukiBot loaded');
+    } catch (err) {
+      logger.error(err);
+    }
+  }
+
+  await client.user.setActivity('.tbhelp');
+  logger.debug('Activity set');
 };
 
 /**

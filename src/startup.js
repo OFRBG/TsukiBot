@@ -1,5 +1,6 @@
 const schedule = require('node-schedule');
 const reloader = require('./getCoins');
+const logger = require('./logger');
 
 const extensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'mov', 'mp4'];
 
@@ -16,12 +17,8 @@ const getCMCData = async () => {
   });
 };
 
-const startup = () => {
-  if (process.argv[2] === '-d') {
-    console.log('dev mode');
-  }
-
-  console.log('------------------ Bot start ------------------');
+const startup = client => {
+  logger.info('------------------ Bot start ------------------');
 
   client.user.setActivity('.tbhelp');
 
@@ -30,8 +27,8 @@ const startup = () => {
 
   client
     .fetchUser('217327366102319106')
-    .then(async u => await u.send('TsukiBot loaded.').catch(console.log))
-    .catch(console.log);
+    .then(u => u.send('TsukiBot loaded.'))
+    .catch(err => logger.error(err));
 };
 
 const newGuild = guild => {
