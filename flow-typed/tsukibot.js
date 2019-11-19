@@ -1,4 +1,5 @@
 // @flow
+declare type SymbolInfo = [string, string, number, number]
 
 declare type Handler = (coins: string[]) => Promise<string>
 

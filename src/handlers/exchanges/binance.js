@@ -7,7 +7,7 @@ const { calculateUsdtPrice } = require('./utils');
 const userAgent = 'Mozilla/4.0 (compatible; Node Binance API)';
 const contentType = 'application/x-www-form-urlencoded';
 const padSpaces = spaces => ' '.repeat(spaces);
-const joiner = '\n`- ⇒` ';
+const joiner = '\n`  ⇒` ';
 const pairMatcher = /(.*)(USDT|BUSD|BTC|ETH|NGN|USDC|PAX|USDS|TUSD|BNB)/;
 
 const url = 'https://api.binance.com/api/v1/ticker/24hr';
@@ -26,16 +26,45 @@ const pricesRequest = () => {
   return request(opt);
 };
 
-const calculateMessage = (coinData, coin, allCoinsData) => {
-  const price =
-    coin !== 'BTC' && coin !== 'ETH' && _.isNil(coinData[4])
-      ? calculateUsdtPrice(coinData[0], allCoinsData.BTC[0])
-      : '';
+const extractTickers = symbol => {
+  const result = pairMatcher.exec(symbol);
+  return result ? [result[1], result[2]] : [];
+};
 
-  // eslint-disable-next-line prefer-template
-  return `\`• ${coin}${padSpaces(6 - coin.length)}⇒ \`${coinData.join(
-    joiner
-  )}${price}`;
+const coinLead = coin => `\`• ${coin}\``;
+
+const priceMsg = data =>
+  `\`${data.price} ${data.base} (${data.percentChange}%)\``;
+
+const buildMessage = (data, coin) =>
+  coinLead(coin) +
+  _.chain(data)
+    .map(priceMsg)
+    .thru(messages => ['', ...messages])
+    .join(joiner)
+    .value();
+
+const reducePrices = (bitcoinPrice, bitcoinPercentChange) => (
+  calculatedPrices,
+  prices /*: SymbolInfo */
+) => {
+  const [coin, base, price, percentChange] = prices;
+
+  const data = {
+    ...(calculatedPrices[coin] || {}),
+    [base]: { coin, base, price, percentChange }
+  };
+
+  if (base === 'BTC') {
+    data.USDT = {
+      coin,
+      base: 'USDT',
+      price: calculateUsdtPrice(price.toString(), bitcoinPrice),
+      percentChange: (-(percentChange - bitcoinPercentChange)).toFixed(2)
+    };
+  }
+
+  return _.set(calculatedPrices, coin, data);
 };
 
 const handler /*: Handler */ = async coins => {
@@ -48,28 +77,33 @@ const handler /*: Handler */ = async coins => {
 
   const messageHeader = '__Binance__ Price for: \n';
 
-  const requests = markets.map(market => {
+  const btcData = markets.find(market => market.symbol === 'BTCUSDT');
+
+  const requests /*: SymbolInfo[] */ = markets.map(market => {
     const rawPrice = parseFloat(market.lastPrice);
 
-    const result = pairMatcher.exec(market.symbol);
+    const [coin, base] = extractTickers(market.symbol);
 
-    if (result == null) return '';
+    if (!allCoins.includes(coin)) return '';
 
-    const [, curr, base] = result;
-
-    if (!allCoins.includes(curr)) return '';
-    console.log(market.symbol);
-
-    const price = base === 'BTC' ? rawPrice.toFixed(8) : rawPrice;
+    const price = rawPrice.toFixed(rawPrice > 2 ? 2 : 8);
 
     const percentChange = parseFloat(market.priceChangePercent).toFixed(2);
 
-    return `\`${price} ${base} (${percentChange}%)\` ∭ \`(V.${Math.trunc(
-      parseFloat(market.quoteVolume)
-    )})\``;
+    return [coin, base, price, percentChange];
   });
 
-  return messageHeader + _.compact(requests).join(joiner);
+  const groupedRequests = _.chain(requests)
+    .compact()
+    .reduce(
+      reducePrices(btcData.lastPrice, parseFloat(btcData.priceChangePercent)),
+      {}
+    )
+    .map(buildMessage)
+    .join('\n')
+    .value();
+
+  return messageHeader + groupedRequests;
 };
 
 const matcher /*: Matcher */ = command => ['bin', 'm', 'n'].includes(command);
