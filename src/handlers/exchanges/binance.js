@@ -1,6 +1,5 @@
 // @flow
 const _ = require('lodash');
-// const binance = require('node-binance-api');
 const request = require('request-promise-native');
 const { calculateUsdtPrice } = require('./utils');
 
@@ -11,6 +10,9 @@ const pairMatcher = /(.*)(USDT|BUSD|BTC|ETH|NGN|USDC|PAX|USDS|TUSD|BNB)/;
 
 const url = 'https://api.binance.com/api/v1/ticker/24hr';
 
+/**
+ * Query the Binance API
+ */
 const pricesRequest = () => {
   const opt = {
     url,
@@ -25,17 +27,29 @@ const pricesRequest = () => {
   return request(opt);
 };
 
-const extractTickers = symbol => {
+/**
+ * Extract the tickers from the given pair string
+ */
+const extractTickers = (symbol /*: string */) /*: [string, string] */ => {
   const result = pairMatcher.exec(symbol);
-  return result ? [result[1], result[2]] : [];
+  return result ? [result[1], result[2]] : ['', ''];
 };
 
-const coinLead = coin => `\`• ${coin}\``;
+/**
+ * Format as monospace with bullet
+ */
+const coinLead = (coin /*: string */) /*: string */ => `\`• ${coin}\``;
 
-const priceMsg = data =>
+/**
+ * Format price data into a string
+ */
+const priceMsg /*: (data: Object) => string */ = data =>
   `\`${data.price} ${data.base} (${data.percentChange}%)\``;
 
-const buildMessage = (data, coin) =>
+/**
+ * Take coin information and format as a string
+ */
+const buildMessage = (data /*: Object */, coin /*: string */) /*: string */ =>
   coinLead(coin) +
   _.chain(data)
     .map(priceMsg)
@@ -43,6 +57,9 @@ const buildMessage = (data, coin) =>
     .join(joiner)
     .value();
 
+/**
+ * Combine prices of the same currency
+ */
 const reducePrices = (bitcoinPrice, bitcoinPercentChange) => (
   calculatedPrices,
   prices /*: SymbolInfo */

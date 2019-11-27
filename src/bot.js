@@ -43,31 +43,6 @@ const token = env
   .asString();
 
 /**
- * Match a message against possible commands
- *
- * @param message Discord message
- */
-const commands = message => {
-  const tokens = getParams(message.content);
-
-  if (_.isEmpty(tokens)) throw Error('No parameters');
-
-  logger.verbose(`Tokenized command: [${tokens.join(', ')}]`);
-
-  const [command, ...options] = tokens;
-
-  const params = options.filter(isValidParam).slice(0, 10);
-
-  const handler = getHandler(command);
-
-  if (_.isNil(handler)) throw Error('No command matched');
-
-  logger.verbose(`Matched ${command}`);
-
-  return handler(params);
-};
-
-/**
  * Handle server ready state
  */
 const readyHandler = async () => {
@@ -94,6 +69,31 @@ const readyHandler = async () => {
 };
 
 /**
+ * Match a message against possible commands
+ *
+ * @param message Discord message
+ */
+const commands = message => {
+  const tokens = getParams(message.content);
+
+  if (_.isEmpty(tokens)) throw Error('No parameters');
+
+  logger.verbose(`Tokenized command: [${tokens.join(', ')}]`);
+
+  const [command, ...options] = tokens;
+
+  const params = options.filter(isValidParam).slice(0, 10);
+
+  const handler = getHandler(command);
+
+  if (_.isNil(handler)) throw Error('No command matched');
+
+  logger.verbose(`Matched ${command}`);
+
+  return handler(params);
+};
+
+/**
  * Handle incoming messages
  *
  * @param message Discord message
@@ -105,10 +105,9 @@ const messageHandler = async message => {
 
   try {
     const response = await commands(message);
-
     message.channel.send(response);
   } catch (err) {
-    logger.debug(err.message);
+    logger.error(err.message);
   }
 };
 

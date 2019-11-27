@@ -1,22 +1,32 @@
+// @flow
 const BFX = require('bitfinex-api-node');
+const { promisify } = require('util');
 const { currencyPair } = require('./utils');
 
-const bfxRest = new BFX().rest;
+const client = new BFX().rest;
 
-const getPriceBitfinex = (coin1, coin2) => {
+const api = promisify(client.ticker.bind(client));
+
+const handler /*: Handler */ = async coins => {
+  const [coin1 = 'ETH', coin2 = 'USD'] = coins;
+
   const pair = currencyPair(coin1, coin2);
 
-  coin2 = coin2 || (coin1.toUpperCase() === 'BTC' ? 'USD' : 'BTC');
+  const res = await api(`${coin1}${coin2}`.toUpperCase());
 
-  bfxRest.ticker(`${coin1}${coin2}`.toUpperCase(), (err, res) => {
-    if (err) {
-      return 'API Error';
-    }
+  const price =
+    coin2.toUpperCase() === 'USD'
+      ? parseFloat(res.last_price).toFixed(2)
+      : res.last_price;
 
-    return `__Bitfinex__ Price for **${pair}** is : \`${parseFloat(
-      res.last_price
-    ).toFixed(8)} ${coin2.toUpperCase()}\`.`;
-  });
+  return `__Bitfinex__ Price for **${pair}** is : \`${price} ${coin2.toUpperCase()}\`.`;
 };
 
-module.exports = { getPriceBitfinex };
+const matcher /*: Matcher */ = command => ['fx', 'bitfinex'].includes(command);
+
+const commandHandler /*: CommandHandler */ = {
+  handler,
+  matcher
+};
+
+module.exports = commandHandler;
