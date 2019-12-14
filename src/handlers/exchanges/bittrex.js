@@ -8,65 +8,56 @@ bittrex.options({
   cleartext: true
 });
 
-const getPriceBittrex = baseCoins => {
+const apiUrl = 'https://bittrex.com/Api/v2.0/pub/Markets/GetMarketSummaries';
+
+const getPriceBittrex = async baseCoins => {
   const bases = _(baseCoins)
     .map(_.toUpperCase)
+    .concat('BTC')
     .sort()
     .value();
-  bases.push('BTC');
 
-  bittrex.sendCustomRequest(
-    'https://bittrex.com/Api/v2.0/pub/Markets/GetMarketSummaries',
-    res => {
-      const data = JSON.parse(res);
+  const message = '__Bittrex__ Price for: \n';
 
-      if (data && data.result) {
-        const allMarkets = data.result;
-        const message = '__Bittrex__ Price for: \n';
-        const sn = [];
-
-        const markets = allMarkets.filter(item =>
-          baseCoins.includes(item.Market.MarketCurrency)
-        );
-
-        markets.map(market => {
-          const rawLastPrice = market.Summary.Last;
-          const price =
-            market.Market.BaseCurrency === 'BTC'
-              ? rawLastPrice.toFixed(8)
-              : rawLastPrice;
-
-          if (!sn[market.Market.MarketCurrency]) {
-            sn[market.Market.MarketCurrency] = [];
-          }
-
-          const percentChange = (
-            (price / market.Summary.PrevDay - 1) *
-            100
-          ).toFixed(2);
-
-          sn[market.Market.MarketCurrency].push(
-            `\`${price} ${
-              market.Market.BaseCurrency
-            } (${percentChange}%)\` ∭ \`(V.${Math.trunc(
-              market.Summary.BaseVolume
-            )})\``
-          );
-
-          return (
-            message +
-            _.chain(sn).map((coinData, coin, coins) =>
-              `\`• ${coin}${' '.repeat(6 - coin.length)}⇒\` ${coinData.join(
-                '\n`- ⇒` '
-              )}${coin !== 'BTC' && coin !== 'ETH' && coinData[2] == null}`
-                ? calculateUsdtPrice(coinData[0], coins.BTC[0])
-                : ''
-            )
-          );
-        });
-      }
-    }
+  const data = await new Promise(resolve =>
+    bittrex.sendCustomRequest(apiUrl, resolve)
   );
+
+  if (!_.has(data, 'result')) throw Error('No data received');
+
+  const allMarkets = data.result;
+
+  const markets = allMarkets.filter(item =>
+    baseCoins.includes(item.Market.MarketCurrency)
+  );
+
+  const result = markets.reduce((currencyData, market) => {
+    const summary = market.Summary;
+
+    const rawLastPrice = summary.Last;
+    const base = market.Market.BaseCurrency;
+    const coin = market.Market.MarketCurrency;
+
+    const price = rawLastPrice.toFixed(base === 'BTC' ? 8 : 2);
+
+    const percentChange = ((price / summary.PrevDay - 1) * 100).toFixed(2);
+
+    return _.assignIn(currencyData[coin], {
+      [base]: {
+        price,
+        percentChange,
+        volume: summary.BaseVolume
+      }
+    });
+  });
+
+  /* _.chain(result).map((coinData, coin, coins) =>
+    `\`• ${coin}${' '.repeat(6 - coin.length)}⇒\` ${coinData.join(
+      '\n`- ⇒` '
+    )}${coin !== 'BTC' && coin !== 'ETH' && coinData[2] == null}`
+      ? calculateUsdtPrice(coinData[0], coins.BTC[0])
+      : ''
+  ); */
 };
 
 module.exports = { getPriceBittrex };

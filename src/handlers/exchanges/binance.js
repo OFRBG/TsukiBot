@@ -30,7 +30,7 @@ const pricesRequest = () => {
 /**
  * Extract the tickers from the given pair string
  */
-const extractTickers = (symbol /*: string */) /*: [string, string] */ => {
+const extractTickers = (symbol /* : string */) /* : [string, string] */ => {
   const result = pairMatcher.exec(symbol);
   return result ? [result[1], result[2]] : ['', ''];
 };
@@ -38,18 +38,18 @@ const extractTickers = (symbol /*: string */) /*: [string, string] */ => {
 /**
  * Format as monospace with bullet
  */
-const coinLead = (coin /*: string */) /*: string */ => `\`• ${coin}\``;
+const coinLead = (coin /* : string */) /* : string */ => `\`• ${coin}\``;
 
 /**
  * Format price data into a string
  */
-const priceMsg /*: (data: Object) => string */ = data =>
+const priceMsg /* : (data: Object) => string */ = data =>
   `\`${data.price} ${data.base} (${data.percentChange}%)\``;
 
 /**
  * Take coin information and format as a string
  */
-const buildMessage = (data /*: Object */, coin /*: string */) /*: string */ =>
+const buildMessage = (data /* : Object */, coin /* : string */) =>
   coinLead(coin) +
   _.chain(data)
     .map(priceMsg)
@@ -60,61 +60,81 @@ const buildMessage = (data /*: Object */, coin /*: string */) /*: string */ =>
 /**
  * Combine prices of the same currency
  */
-const reducePrices = (bitcoinPrice, bitcoinPercentChange) => (
-  calculatedPrices,
-  prices /*: SymbolInfo */
+const reducePrices = (bitcoinPrice /* : string */, bitcoinPercentChange) => (
+  calculatedPrices /* : {[coin: string] : BinanceCoinData}  */,
+  prices /* : SymbolInfo */
 ) => {
   const [coin, base, price, percentChange] = prices;
 
-  const data = {
-    ...(calculatedPrices[coin] || {}),
-    [base]: { coin, base, price, percentChange }
+  const currentData = calculatedPrices[coin];
+  const newData /* : BinanceCoinData */ = {
+    [base]: {
+      coin,
+      base,
+      price,
+      percentChange
+    }
   };
 
+  const data = _.assignIn({}, currentData, newData);
+
   if (base === 'BTC') {
-    data.USDT = {
-      coin,
-      base: 'USDT',
-      price: calculateUsdtPrice(price.toString(), bitcoinPrice),
-      percentChange: (-(percentChange - bitcoinPercentChange)).toFixed(2)
+    const usdtData /* : BinanceCoinData */ = {
+      USDT: {
+        coin,
+        base: 'USDT',
+        price: calculateUsdtPrice(price.toString(), bitcoinPrice),
+        percentChange: (-(
+          parseFloat(percentChange) - bitcoinPercentChange
+        )).toFixed(2)
+      }
     };
+
+    _.assignIn(data, usdtData);
   }
 
-  return _.set(calculatedPrices, coin, data);
+  return _.assignIn(calculatedPrices[coin], data);
 };
 
-const handler /*: Handler */ = async coins => {
-  const allCoins /* string[] */ = _.chain(coins)
+const extractCoinData = requestedCoins => market => {
+  const rawPrice = parseFloat(market.lastPrice);
+
+  const [coin, base] = extractTickers(market.symbol);
+
+  if (!requestedCoins.includes(coin)) return '';
+
+  const price = rawPrice.toFixed(rawPrice > 2 ? 2 : 8).toString();
+  const percentChange = parseFloat(market.priceChangePercent)
+    .toFixed(2)
+    .toString();
+
+  return [coin, base, price, percentChange];
+};
+
+const handler /* : Handler */ = async coins => {
+  const requestedCoins /* string[] */ = _.chain(coins)
     .map(_.toUpper)
     .sort()
     .value();
 
-  const markets = JSON.parse(await pricesRequest());
-
   const messageHeader = '__Binance__ Price for: \n';
+
+  const markets = JSON.parse(await pricesRequest());
 
   const btcData = markets.find(market => market.symbol === 'BTCUSDT');
 
-  const requests /*: SymbolInfo[] */ = markets.map(market => {
-    const rawPrice = parseFloat(market.lastPrice);
+  const otherCoinData /* : SymbolInfo[] */ = markets.map(
+    extractCoinData(requestedCoins)
+  );
 
-    const [coin, base] = extractTickers(market.symbol);
+  const calculatePrices = reducePrices(
+    btcData.lastPrice,
+    parseFloat(btcData.priceChangePercent)
+  );
 
-    if (!allCoins.includes(coin)) return '';
-
-    const price = rawPrice.toFixed(rawPrice > 2 ? 2 : 8);
-
-    const percentChange = parseFloat(market.priceChangePercent).toFixed(2);
-
-    return [coin, base, price, percentChange];
-  });
-
-  const groupedRequests = _.chain(requests)
+  const groupedRequests = _.chain(otherCoinData)
     .compact()
-    .reduce(
-      reducePrices(btcData.lastPrice, parseFloat(btcData.priceChangePercent)),
-      {}
-    )
+    .reduce(calculatePrices, {})
     .map(buildMessage)
     .join('\n')
     .value();
@@ -122,9 +142,9 @@ const handler /*: Handler */ = async coins => {
   return messageHeader + groupedRequests;
 };
 
-const matcher /*: Matcher */ = command => ['bin', 'm', 'n'].includes(command);
+const matcher /* : Matcher */ = command => ['bin', 'm', 'n'].includes(command);
 
-const commandHandler /*: CommandHandler */ = {
+const commandHandler /* : CommandHandler */ = {
   handler,
   matcher
 };

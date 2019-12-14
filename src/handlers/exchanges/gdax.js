@@ -1,5 +1,4 @@
 // @flow
-const _ = require('lodash');
 const { Client } = require('coinbase');
 const env = require('env-var');
 const { promisify } = require('util');
@@ -17,7 +16,7 @@ const client = new Client({
 
 const api = promisify(client.getSpotPrice.bind(client));
 
-const handler /*: Handler */ = async coins => {
+const handler /* : Handler */ = async coins => {
   const [coin1 = 'ETH', coin2 = 'USD', base] = coins;
 
   const pair = currencyPair(coin1, coin2);
@@ -31,9 +30,9 @@ const handler /*: Handler */ = async coins => {
   return `__GDAX__ Price for **${pair}** is : \`${price} ${coin2.toUpperCase()}\`.${percentChange}`;
 };
 
-const matcher /*: Matcher */ = command => ['g', 'gdax'].includes(command);
+const matcher /* : Matcher */ = command => ['g', 'gdax'].includes(command);
 
-const commandHandler /*: CommandHandler */ = {
+const commandHandler /* : CommandHandler */ = {
   handler,
   matcher
 };

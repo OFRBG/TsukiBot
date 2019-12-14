@@ -8,7 +8,7 @@ const client = new KrakenClient();
 
 const api = promisify(client.api.bind(client));
 
-const handler /*: Handler */ = async coins => {
+const handler /* : Handler */ = async coins => {
   const [coin1 = 'ETH', coin2 = 'USD', base] = coins;
 
   const pair = currencyPair(coin1, coin2);
@@ -30,9 +30,9 @@ const handler /*: Handler */ = async coins => {
   return `__Kraken__ Price for **${pair}** is : \`${price} ${coin2.toUpperCase()}\`.${percentChange}`;
 };
 
-const matcher /*: Matcher */ = command => ['k', 'kraken'].includes(command);
+const matcher /* : Matcher */ = command => ['k', 'kraken'].includes(command);
 
-const commandHandler /*: CommandHandler */ = {
+const commandHandler /* : CommandHandler */ = {
   handler,
   matcher
 };

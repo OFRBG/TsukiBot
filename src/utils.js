@@ -11,7 +11,7 @@ const availablePrefixes = ['-t', '.tb'];
  *
  * @param s Value to check
  */
-const isNonEmptyString = (s /*: any */) => _.isString(s) && s.length > 0;
+const isNonEmptyString = (s /* : any */) => _.isString(s) && s.length > 0;
 
 /**
  * Check if the lead parameter contains the prefix
@@ -19,15 +19,15 @@ const isNonEmptyString = (s /*: any */) => _.isString(s) && s.length > 0;
  * @param lead Lead parameter of the message
  * @param prefix Prefix to check
  */
-const containsPrefix = (lead /*: string */, prefix /*: string */) =>
-  lead.indexOf(prefix) === 0;
+const containsPrefix = (lead /* : string */, prefix /* : string */) =>
+  lead[0] === prefix;
 
 /**
  * Check if the lead parameter contains the prefix
  *
  * @param value Check if the value is a valid parameter
  */
-const isValidParam = (value /*: string */) =>
+const isValidParam = (value /* : string */) =>
   pairs.includes(value.toUpperCase()) || _.isNumber(parseFloat(value));
 
 /**
@@ -35,7 +35,7 @@ const isValidParam = (value /*: string */) =>
  *
  * @param command Commend to match
  */
-const getHandler = (command /*: string */) =>
+const getHandler = (command /* : string */) =>
   _.chain(handlers)
     .find(commandHandler => commandHandler.matcher(command))
     .get('handler')
@@ -46,24 +46,20 @@ const getHandler = (command /*: string */) =>
  *
  * @param content Raw message to parse
  */
-const getParams = (content /*: string */) => {
+const getParams = (content /* : string */) => {
   const tokens = content.split(' ').filter(isNonEmptyString);
 
   if (_.isEmpty(tokens)) throw Error('No content');
 
-  const matchedPrefix = availablePrefixes.reduce(
-    (foundPrefix, prefix) =>
-      foundPrefix || (containsPrefix(tokens[0], prefix) ? prefix : null),
-    null
+  const matchedPrefix = availablePrefixes.find(prefix =>
+    containsPrefix(tokens[0], prefix)
   );
 
   if (matchedPrefix == null) throw Error('No prefix');
 
-  // Handle options like .tbk
-  const parsedLead = tokens[0].replace(matchedPrefix, '');
-  const restParams = tokens.slice(1);
+  tokens[0] = tokens[0].replace(matchedPrefix, '');
 
-  return _.compact([parsedLead, ...restParams]);
+  return _.compact(tokens);
 };
 
 module.exports = {
