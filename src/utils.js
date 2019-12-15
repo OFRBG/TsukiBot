@@ -20,7 +20,7 @@ const isNonEmptyString = (s /* : any */) => _.isString(s) && s.length > 0;
  * @param prefix Prefix to check
  */
 const containsPrefix = (lead /* : string */, prefix /* : string */) =>
-  lead[0] === prefix;
+  lead.indexOf(prefix) === 0;
 
 /**
  * Check if the lead parameter contains the prefix

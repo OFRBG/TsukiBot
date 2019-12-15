@@ -66,34 +66,27 @@ const reducePrices = (bitcoinPrice /* : string */, bitcoinPercentChange) => (
 ) => {
   const [coin, base, price, percentChange] = prices;
 
-  const currentData = calculatedPrices[coin];
-  const newData /* : BinanceCoinData */ = {
-    [base]: {
-      coin,
-      base,
-      price,
-      percentChange
-    }
+  const newData = {
+    coin,
+    base,
+    price,
+    percentChange
   };
 
-  const data = _.assignIn({}, currentData, newData);
-
   if (base === 'BTC') {
-    const usdtData /* : BinanceCoinData */ = {
-      USDT: {
-        coin,
-        base: 'USDT',
-        price: calculateUsdtPrice(price.toString(), bitcoinPrice),
-        percentChange: (-(
-          parseFloat(percentChange) - bitcoinPercentChange
-        )).toFixed(2)
-      }
+    const usdtData = {
+      coin,
+      base: 'USDT',
+      price: calculateUsdtPrice(price.toString(), bitcoinPrice),
+      percentChange: (-(
+        parseFloat(percentChange) - bitcoinPercentChange
+      )).toFixed(2)
     };
 
-    _.assignIn(data, usdtData);
+    _.set(calculatedPrices, `${coin}.USDT`, usdtData);
   }
 
-  return _.assignIn(calculatedPrices[coin], data);
+  return _.set(calculatedPrices, `${coin}.${base}`, newData);
 };
 
 const extractCoinData = requestedCoins => market => {
@@ -114,6 +107,8 @@ const extractCoinData = requestedCoins => market => {
 const handler /* : Handler */ = async coins => {
   const requestedCoins /* string[] */ = _.chain(coins)
     .map(_.toUpper)
+    .concat(['BTC', 'ETH'])
+    .uniq()
     .sort()
     .value();
 

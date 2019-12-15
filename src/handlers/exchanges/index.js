@@ -1,6 +1,6 @@
 const binance = require('./binance');
 const bitfinex = require('./bitfinex');
-// const bittrex = require('./bittrex');
+const bittrex = require('./bittrex');
 // const cc = require('./cc');
 // const cmc = require('./cmc');
 const gdax = require('./gdax');
@@ -10,6 +10,7 @@ const kraken = require('./kraken');
 module.exports = {
   binance,
   bitfinex,
+  bittrex,
   gdax,
   kraken
 };
