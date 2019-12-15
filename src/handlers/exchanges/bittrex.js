@@ -23,6 +23,26 @@ const coinLead = (coin /* : string */) /* : string */ => `\`• ${coin}\``;
 const priceMsg /* : (data: Object) => string */ = data =>
   `\`${data.price} ${data.base} (${data.percentChange}%)\``;
 
+const marketReducer = (currencyData, market) => {
+  const summary = market.Summary;
+
+  const rawLastPrice = summary.Last;
+  const base = market.Market.BaseCurrency;
+  const coin = market.Market.MarketCurrency;
+
+  const price = rawLastPrice.toFixed(rawLastPrice > 1 ? 2 : 8);
+  const percentChange = ((price / summary.PrevDay - 1) * 100).toFixed(2);
+
+  const newData = {
+    base,
+    price,
+    percentChange,
+    volume: summary.BaseVolume
+  };
+
+  return _.set(currencyData, `${coin}.${base}`, newData);
+};
+
 /**
  * Take coin information and format as a string
  */
@@ -49,33 +69,9 @@ const handler /* : Handler */ = async coins => {
 
   if (!_.has(data, 'result')) throw Error('No data received');
 
-  const allMarkets = data.result;
-
-  const markets = allMarkets.filter(item =>
-    currencies.includes(item.Market.MarketCurrency)
-  );
-
-  const result = markets.reduce((currencyData, market) => {
-    const summary = market.Summary;
-
-    const rawLastPrice = summary.Last;
-    const base = market.Market.BaseCurrency;
-    const coin = market.Market.MarketCurrency;
-
-    const price = rawLastPrice.toFixed(rawLastPrice > 1 ? 2 : 8);
-    const percentChange = ((price / summary.PrevDay - 1) * 100).toFixed(2);
-
-    const newData = {
-      base,
-      price,
-      percentChange,
-      volume: summary.BaseVolume
-    };
-
-    return _.set(currencyData, `${coin}.${base}`, newData);
-  }, {});
-
-  const groupedRequests = _.chain(result)
+  const groupedRequests = _.chain(data.result)
+    .filter(item => currencies.includes(item.Market.MarketCurrency))
+    .reduce(marketReducer, {})
     .map(buildMessage)
     .join('\n')
     .value();
