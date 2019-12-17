@@ -1,6 +1,6 @@
 {
   "name": "tsukibot",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Discord bot with cryptocurrency functionalities",
   "main": "src/bot.js",
   "author": "Oscar Fonseca",
@@ -41,6 +41,7 @@
     "yargs": "^15.0.1"
   },
   "devDependencies": {
+    "commitizen": "^4.0.3",
     "cz-conventional-changelog": "^3.0.2",
     "eslint": "^6.5.1",
     "eslint-config-airbnb": "^18.0.1",
