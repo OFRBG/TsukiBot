@@ -1,6 +1,6 @@
 {
   "name": "tsukibot",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Discord bot with cryptocurrency functionalities",
   "main": "src/bot.js",
   "author": "Oscar Fonseca",
