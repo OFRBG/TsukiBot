@@ -1,9 +1,9 @@
 .gitignore
 node_modules
+common
 
 .env
 .env.*
-*.json
 *.pdf
 .Rhistory
 *.R
