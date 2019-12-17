@@ -1,11 +1,10 @@
 // @flow
 const _ = require('lodash');
 const request = require('request-promise-native');
-const { calculateUsdtPrice } = require('./utils');
+const { buildMessage, calculateUsdtPrice } = require('./utils');
 
 const userAgent = 'Mozilla/4.0 (compatible; Node Binance API)';
 const contentType = 'application/x-www-form-urlencoded';
-const joiner = '\n`  ⇒` ';
 const pairMatcher = /(.*)(USDT|BTC|ETH)/;
 
 const url = 'https://api.binance.com/api/v1/ticker/24hr';
@@ -34,28 +33,6 @@ const extractTickers = (symbol /* : string */) /* : [string, string] */ => {
   const result = pairMatcher.exec(symbol);
   return result ? [result[1], result[2]] : ['', ''];
 };
-
-/**
- * Format as monospace with bullet
- */
-const coinLead = (coin /* : string */) /* : string */ => `\`• ${coin}\``;
-
-/**
- * Format price data into a string
- */
-const priceMsg /* : (data: Object) => string */ = data =>
-  `\`${data.price} ${data.base} (${data.percentChange}%)\``;
-
-/**
- * Take coin information and format as a string
- */
-const buildMessage = (data /* : Object */, coin /* : string */) =>
-  coinLead(coin) +
-  _.chain(data)
-    .map(priceMsg)
-    .thru(messages => ['', ...messages])
-    .join(joiner)
-    .value();
 
 /**
  * Combine prices of the same currency

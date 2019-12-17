@@ -1,50 +1,38 @@
 const request = require('request');
 const fs = require('fs');
 
+const include = ['USD', 'EUR', 'GBP', 'SGD', 'XBT', 'XLM', 'MXN', 'BCC', 'STR'];
+const exclude = [
+  'POST',
+  'U',
+  'AND',
+  'IN',
+  'POLL',
+  'AM',
+  'GOT',
+  'GOOD',
+  'TODAY'
+];
+
+const formatData = data => `["${data.slice().join('","')}"]`;
+
 const update = () =>
   new Promise(resolve => {
     const url = 'http://www.cryptocompare.com/api/data/coinlist/';
-    const extras = [
-      'USD',
-      'EUR',
-      'GBP',
-      'SGD',
-      'XBT',
-      'XLM',
-      'MXN',
-      'BCC',
-      'STR'
-    ];
-    const filters = [
-      'POST',
-      'U',
-      'AND',
-      'IN',
-      'POLL',
-      'AM',
-      'GOT',
-      'GOOD',
-      'TODAY'
-    ];
 
     request({ url, json: true }, (err, res, body) => {
-      let coins = Object.keys(body.Data).concat(extras);
-      let coinsf = Object.keys(body.Data).concat(extras);
+      const coins = Object.keys(body.Data).concat(include);
 
-      const coinsa = coins.slice();
-      coins = coins.join('","');
-      coins = `["${coins}"]`;
+      const included = formatData(coins);
 
-      filters.forEach(f => coinsf.splice(coinsf.indexOf(f), 1));
+      exclude.forEach(f => coins.splice(coins.indexOf(f), 1));
 
-      const coinsfa = coinsf.slice();
-      coinsf = coinsf.join('","');
-      coinsf = `["${coinsf}"]`;
+      const excluded = formatData(coins);
 
-      fs.writeFile('./common/coins.json', coins, console.error);
-      fs.writeFile('./common/coins_filtered.json', coinsf, console.error);
+      fs.writeFile('./common/coins.json', included, console.error);
+      fs.writeFile('./common/coins_filtered.json', excluded, console.error);
 
-      resolve([coinsa, coinsfa]);
+      resolve([coins, excluded]);
     });
   });
 

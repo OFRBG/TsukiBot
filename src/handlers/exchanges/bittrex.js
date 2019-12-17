@@ -1,7 +1,7 @@
 // @flow
 const _ = require('lodash');
 const bittrex = require('node.bittrex.api');
-// const { calculateUsdtPrice } = require('./utils'); // TODO: Add calculated USDT prices
+const { buildMessage } = require('./utils'); // TODO: Add calculated USDT prices
 
 bittrex.options({
   stream: false,
@@ -10,19 +10,6 @@ bittrex.options({
 });
 
 const apiUrl = 'https://bittrex.com/Api/v2.0/pub/Markets/GetMarketSummaries';
-const joiner = '\n`  ⇒` ';
-
-/**
- * Format as monospace with bullet
- */
-const coinLead = (coin /* : string */) /* : string */ => `\`• ${coin}\``;
-
-/**
- * Format price data into a string
- */
-const priceMsg /* : (data: Object) => string */ = data =>
-  `\`${data.price} ${data.base} (${data.percentChange}%)\``;
-
 const marketReducer = (currencyData, market) => {
   const summary = market.Summary;
 
@@ -42,17 +29,6 @@ const marketReducer = (currencyData, market) => {
 
   return _.set(currencyData, `${coin}.${base}`, newData);
 };
-
-/**
- * Take coin information and format as a string
- */
-const buildMessage = (data /* : Object */, coin /* : string */) =>
-  coinLead(coin) +
-  _.chain(data)
-    .map(priceMsg)
-    .thru(messages => ['', ...messages])
-    .join(joiner)
-    .value();
 
 const handler /* : Handler */ = async coins => {
   const currencies = _.chain(coins)

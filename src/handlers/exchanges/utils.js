@@ -1,6 +1,8 @@
 // @flow
 const _ = require('lodash');
 
+const joiner = '\n`  ⇒` ';
+
 const percentChange = (
   price /* : number */,
   base /* : number */
@@ -35,4 +37,31 @@ const calculateUsdtPrice = (
     ) / 100000000
   ).toString();
 
-module.exports = { currencyPair, calculateUsdtPrice, percentChangeMessage };
+/**
+ * Format as monospace with bullet
+ */
+const coinLead = (coin /* : string */) /* : string */ => `\`• ${coin}\``;
+
+/**
+ * Format price data into a string
+ */
+const priceMsg /* : (data: Object) => string */ = data =>
+  `\`${data.price} ${data.base} (${data.percentChange}%)\``;
+
+/**
+ * Take coin information and format as a string
+ */
+const buildMessage = (data /* : Object */, coin /* : string */) =>
+  coinLead(coin) +
+  _.chain(data)
+    .map(priceMsg)
+    .thru(messages => ['', ...messages])
+    .join(joiner)
+    .value();
+
+module.exports = {
+  buildMessage,
+  currencyPair,
+  calculateUsdtPrice,
+  percentChangeMessage
+};
