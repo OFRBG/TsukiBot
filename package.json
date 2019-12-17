@@ -40,6 +40,7 @@
     "yargs": "^15.0.1"
   },
   "devDependencies": {
+    "cz-conventional-changelog": "^3.0.2",
     "eslint": "^6.5.1",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-airbnb-base": "^14.0.0",
@@ -51,8 +52,21 @@
     "eslint-plugin-react-hooks": "^1.7.0",
     "flow-bin": "^0.114.0",
     "flow-remove-types": "^2.112.0",
+    "husky": "^3.1.0",
     "jest": "^24.9.0",
     "nodemon": "^2.0.2",
-    "prettier": "^1.18.2"
+    "prettier": "^1.18.2",
+    "standard-version": "^7.0.1"
+  },
+  "husky": {
+    "hooks": {
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
+      "pre-commit": "npm run lint"
+    }
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }
