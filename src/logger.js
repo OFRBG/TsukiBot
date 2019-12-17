@@ -1,5 +1,6 @@
 // @flow
 const winston = require('winston');
+const { LoggingWinston } = require('@google-cloud/logging-winston');
 
 const labelMap = {
   error: 'ERR ',
@@ -64,6 +65,7 @@ module.exports = winston.createLogger({
   exitOnError: false,
   transports: [
     new winston.transports.Console(options.console),
-    new winston.transports.File(options.file)
+    new winston.transports.File(options.file),
+    new LoggingWinston()
   ]
 });

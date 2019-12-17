@@ -1,6 +1,8 @@
 // @flow
 const fs = require('fs');
 const _ = require('lodash');
+
+const { MatchingError } = require('./globals');
 const handlers = require('./handlers/exchanges');
 
 const pairs = JSON.parse(fs.readFileSync('./common/coins.json', 'utf8'));
@@ -49,13 +51,13 @@ const getHandler = (command /* : string */) =>
 const getParams = (content /* : string */) => {
   const tokens = content.split(' ').filter(isNonEmptyString);
 
-  if (_.isEmpty(tokens)) throw Error('No content');
+  if (_.isEmpty(tokens)) throw new MatchingError('No content');
 
   const matchedPrefix = availablePrefixes.find(prefix =>
     containsPrefix(tokens[0], prefix)
   );
 
-  if (matchedPrefix == null) throw Error('No prefix');
+  if (matchedPrefix == null) throw new MatchingError('No prefix');
 
   tokens[0] = tokens[0].replace(matchedPrefix, '');
 

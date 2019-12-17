@@ -6,15 +6,19 @@
   "author": "Oscar Fonseca",
   "repository": "https://github.com/OFRBG/TsukiBot",
   "license": "MIT",
+  "engines": {
+    "node": ">=10.0.0"
+  },
   "scripts": {
     "start": "node ./src/bot.js",
     "dev": "nodemon -- -d",
     "lint": "eslint src",
-    "flow": "flow"
+    "flow": "flow",
+    "deploy": "gcloud app deploy app.base.yaml --version staging --quiet"
   },
   "dependencies": {
+    "@google-cloud/logging-winston": "^3.0.2",
     "bitfinex-api-node": "^1.2.1",
-    "bufferutil": "^3.0.4",
     "coinbase": "^2.0.8",
     "coinmarketcap": "^0.2.0",
     "cryptocompare": "^0.1.0",
@@ -22,7 +26,6 @@
     "discord.js": "^11.3.2",
     "dotenv-flow": "^3.1.0",
     "env-var": "^5.1.0",
-    "etherscan-api": "^100.0.0",
     "gdax": "^0.5.1",
     "kraken-api": "^1.0.0",
     "lodash": "^4.17.15",
@@ -30,14 +33,8 @@
     "node-fetch": "^1.7.3",
     "node-schedule": "^1.3.0",
     "node.bittrex.api": "^0.5.3",
-    "pg": "^7.4.1",
-    "pg-promise": "^6.10.3",
-    "python-shell": "^0.4.0",
-    "r-script": "0.0.3",
     "request": "^2.85.0",
     "request-promise-native": "^1.0.8",
-    "snekfetch": "^3.6.4",
-    "web3": "^1.2.1",
     "winston": "^3.2.1",
     "ws": "^5.1.1",
     "yargs": "^15.0.1"
