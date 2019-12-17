@@ -1,5 +1,6 @@
 // @flow
 const winston = require('winston');
+const env = require('env-var');
 const { LoggingWinston } = require('@google-cloud/logging-winston');
 
 const labelMap = {
@@ -61,11 +62,16 @@ const options = {
   }
 };
 
-module.exports = winston.createLogger({
+const logger = winston.createLogger({
   exitOnError: false,
   transports: [
     new winston.transports.Console(options.console),
-    new winston.transports.File(options.file),
-    new LoggingWinston()
+    new winston.transports.File(options.file)
   ]
 });
+
+if (env.get('GCP_ENV').asString()) {
+  logger.add(new LoggingWinston());
+}
+
+module.exports = logger;
