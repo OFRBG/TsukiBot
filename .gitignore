@@ -1,6 +1,5 @@
 .gitignore
 node_modules
-common
 
 .env
 .env.*
