@@ -14,7 +14,8 @@
     "dev": "nodemon -- -d",
     "lint": "eslint src",
     "flow": "flow",
-    "deploy": "gcloud app deploy app.base.yaml --version staging --quiet"
+    "deploy": "gcloud app deploy app.base.yaml --version staging --quiet",
+    "version": "HUSKY_SKIP_HOOKS=1 standard-version"
   },
   "dependencies": {
     "@google-cloud/logging-winston": "^3.0.2",
