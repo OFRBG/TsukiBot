@@ -1,0 +1,19 @@
+version: "2"
+plugins:
+ eslint:
+  channel: "eslint-5"
+  enabled: true
+  config:
+    config: .eslintrc.js
+    ignore_warnings: true
+exclude_patterns:
+- "**/abi.js"
+- "**/abi.json"
+- "**/node_modules/"
+- "flow-typed/"
+- "common/"
+- "config/"
+- "test/"
+- "db/"
+- "docs/"
+- "python/"

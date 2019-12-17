@@ -1,0 +1,20 @@
+// @flow
+declare type SymbolInfo = [string, string, string, string]
+
+declare type BinanceCoinData = {
+  [base: string] : {|
+    coin: string,
+    base: string,
+    price: string,
+    percentChange: string,
+  |}
+}
+
+declare type Handler = (coins: string[]) => Promise<string>
+
+declare type Matcher = (command: string) => boolean
+
+declare type CommandHandler = {
+  handler: Handler,
+  matcher: Matcher,
+}
