@@ -26,7 +26,7 @@ require('./startup');
 const env = require('env-var');
 const Discord = require('discord.js');
 
-const handlers = require('./handlers');
+const handlers = require('./events');
 
 const client = new Discord.Client();
 const token = env
