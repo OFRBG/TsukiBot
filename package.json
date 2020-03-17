@@ -38,7 +38,7 @@
     "request-promise-native": "^1.0.8",
     "winston": "^3.2.1",
     "ws": "^5.1.1",
-    "yargs": "^15.0.1"
+    "yargs": "^15.3.0"
   },
   "devDependencies": {
     "commitizen": "^4.0.3",
