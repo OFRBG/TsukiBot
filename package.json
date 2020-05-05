@@ -15,7 +15,9 @@
     "lint": "eslint src",
     "flow": "flow",
     "deploy": "gcloud app deploy app.base.yaml --version staging --quiet",
-    "version": "HUSKY_SKIP_HOOKS=1 standard-version"
+    "version": "HUSKY_SKIP_HOOKS=1 standard-version",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "dependencies": {
     "@google-cloud/logging-winston": "^3.0.2",
@@ -38,7 +40,8 @@
     "request-promise-native": "^1.0.8",
     "winston": "^3.2.1",
     "ws": "^5.1.1",
-    "yargs": "^15.0.1"
+    "yargs": "^15.0.1",
+    "snyk": "^1.317.0"
   },
   "devDependencies": {
     "commitizen": "^4.0.3",
@@ -70,5 +73,6 @@
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
-  }
+  },
+  "snyk": true
 }
