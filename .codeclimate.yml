@@ -6,14 +6,3 @@ plugins:
   config:
     config: .eslintrc.js
     ignore_warnings: true
-exclude_patterns:
-- "**/abi.js"
-- "**/abi.json"
-- "**/node_modules/"
-- "flow-typed/"
-- "common/"
-- "config/"
-- "test/"
-- "db/"
-- "docs/"
-- "python/"
