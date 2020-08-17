@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import axios from "axios";
-import Cache from "../Cache";
+import Cache from "Cache";
 import { CommandMatcher, MessageHandler } from ".";
 
 const ServerCache = new Cache();

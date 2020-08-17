@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import _ from "lodash";
 import { MatchingError } from "Globals";
 import handlers, { MessageHandler } from "Handlers";
+import logger from "Logger";
+import { AxiosError } from "axios";
 
 const pairs = [] as readonly string[];
 
@@ -55,4 +59,26 @@ export const getParams = (content: string): readonly string[] => {
   }
 
   return _.compact([command.replace(matchedPrefix, ""), ...options]);
+};
+
+/**
+ * Custom typeguard for Axios errors
+ */
+const isAxiosError = (error: any): error is AxiosError => {
+  return !!error.response;
+};
+
+/**
+ * Log errors according to their type
+ */
+export const logError = (error: Error | AxiosError): void => {
+  switch (error.name) {
+    case "MatchingError":
+      logger.debug(error.message);
+      return;
+    default:
+      if (isAxiosError(error)) logger.error(error.response);
+      else logger.error(error.stack);
+      return;
+  }
 };

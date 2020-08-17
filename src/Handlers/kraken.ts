@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import axios from "axios";
 import { values } from "lodash";
-import Cache from "../Cache";
+import Cache from "Cache";
 import { CommandMatcher, MessageHandler } from ".";
-
-const ServerCache = new Cache();
 
 type KrakenPrice = {
   readonly error: readonly string[];
@@ -15,6 +12,8 @@ type KrakenPrice = {
     };
   };
 };
+
+const ServerCache = new Cache();
 
 const formatMessage = (price: string, volume: number): string => {
   return `${price} ${volume}`;

@@ -2,8 +2,9 @@ import { Client, Message } from "discord.js";
 import env from "env-var";
 import { isNil } from "lodash";
 import logger from "logger";
+import { logError } from "Utils";
 import { argv } from "yargs";
-import { validateDevMode, getMessageProcessor, logError } from "./helpers";
+import { getMessageProcessor, validateDevMode } from "./helpers";
 
 /**
  * Handle server ready state

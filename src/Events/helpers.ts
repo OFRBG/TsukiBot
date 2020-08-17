@@ -39,17 +39,3 @@ export const getMessageProcessor = ({
 
   return [handler, params];
 };
-
-/**
- * Log errors according to their type
- */
-export const logError = (error: Error): void => {
-  switch (error.name) {
-    case "MatchingError":
-      logger.debug(error.message);
-      return;
-    default:
-      logger.error(error.stack);
-      return;
-  }
-};

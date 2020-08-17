@@ -12,7 +12,7 @@
 import { Client } from "discord.js";
 import env from "env-var";
 import { onMessage, onReady } from "Events";
-import logger from "Logger";
+import { logError } from "Utils";
 
 const client = new Client();
 const token = env
@@ -23,4 +23,4 @@ const token = env
 client.on("ready", onReady(client));
 client.on("message", onMessage());
 
-client.login(token).catch(logger.error);
+client.login(token).catch(logError);
