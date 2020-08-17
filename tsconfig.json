@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "outDir": "build",
+    "baseUrl": "./src",
+    "paths": {
+      "*": ["./*"]
+    },
+    "declaration": true,
+    "esModuleInterop": true,
+    "inlineSourceMap": true,
+    "lib": ["es2017"],
+    "listEmittedFiles": false,
+    "listFiles": false,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "pretty": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "traceResolution": false,
+    "typeRoots": ["node_modules/@types", "src/types"],
+    "types": ["jest", "node"],
+    "plugins": [
+      { "transform": "ts-transformer-imports" }
+    ]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules/**"],
+  "compileOnSave": false
+}

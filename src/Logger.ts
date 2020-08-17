@@ -1,50 +1,43 @@
-// @flow
-const winston = require('winston');
-const env = require('env-var');
-const { LoggingWinston } = require('@google-cloud/logging-winston');
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+import winston from "winston";
 
-const labelMap = {
-  error: 'ERR ',
-  warn: 'WARN',
-  info: 'INFO',
-  verbose: 'VERB',
-  debug: 'DEBG',
-  silly: 'SLLY'
+const labelMap: { readonly [level: string]: string } = {
+  error: "ERR ",
+  warn: "WARN",
+  info: "INFO",
+  verbose: "VERB",
+  debug: "DEBG",
+  silly: "SLLY"
 };
 
 const colors = {
-  info: 'bold green',
-  debug: 'white',
-  warn: 'bold yellow',
-  error: 'bold red white'
+  info: "bold green",
+  debug: "white",
+  warn: "bold yellow",
+  error: "bold red white"
 };
 
 winston.addColors(colors);
 
 /**
  * Format console logs
- *
- * @param info Info object
  */
-const logFormat = info =>
+const logFormat = (info: winston.Logform.TransformableInfo): string =>
   `${info.level}:\t[${info.timestamp}] ${info.message}${
-    info.durationMs ? ` - ${info.durationMs}s` : ''
+    info.durationMs ? ` - ${info.durationMs}s` : ""
   }`;
 
 /**
  * Write console logs with uppercase levels
- *
- * @param info Info object
  */
-const setUpperCase = info => {
-  // eslint-disable-next-line no-param-reassign
+const setUpperCase: winston.Logform.TransformFunction = info => {
   info.level = ` ${labelMap[info.level]} `;
   return info;
 };
 
 const options = {
   console: {
-    level: 'debug',
+    level: "debug",
     handleExceptions: true,
     format: winston.format.combine(
       winston.format(setUpperCase)(),
@@ -54,7 +47,7 @@ const options = {
     )
   },
   file: {
-    level: 'info',
+    level: "info",
     filename: `${process.cwd()}/logs/app.log`,
     handleExceptions: true,
     maxsize: 5242880, // 5MB
@@ -70,8 +63,4 @@ const logger = winston.createLogger({
   ]
 });
 
-if (env.get('GCP_ENV').asString()) {
-  logger.add(new LoggingWinston());
-}
-
-module.exports = logger;
+export default logger;
