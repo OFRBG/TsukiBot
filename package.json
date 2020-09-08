@@ -18,7 +18,7 @@
     "version": "HUSKY_SKIP_HOOKS=1 standard-version"
   },
   "dependencies": {
-    "@google-cloud/logging-winston": "^3.0.2",
+    "@google-cloud/logging-winston": "^4.0.0",
     "bitfinex-api-node": "^1.2.1",
     "coinbase": "^2.0.8",
     "coinmarketcap": "^0.2.0",
